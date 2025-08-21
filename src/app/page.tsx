@@ -7,7 +7,7 @@ import { Calculator, Dumbbell } from 'lucide-react'
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 -mt-6">
       <div className="w-full max-w-md space-y-8">
         {/* Logo and Header */}
         <div className="text-center space-y-4">
