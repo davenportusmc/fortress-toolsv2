@@ -12,8 +12,8 @@ export default function HomePage() {
         {/* Logo and Header */}
         <div className="text-center space-y-4">
           <div className="mx-auto w-36 h-36 relative">
-            {/* Place your logo at public/fortress-logo.png */}
-            <Image src="/fortress-logo.png" alt="Fortress Athlete logo" fill priority sizes="144px" className="object-contain" />
+            {/* Place your logo at public/logo.png */}
+            <Image src="/logo.png" alt="Fortress Athlete logo" fill priority sizes="144px" className="object-contain" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Fortress Fitness</h1>
