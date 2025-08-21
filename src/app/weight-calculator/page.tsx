@@ -82,29 +82,7 @@ export default function WeightCalculator() {
           <h1 className="mx-auto text-2xl font-bold text-white">Barbell Calculator</h1>
         </div>
 
-        {/* Top Row: Undo / Reset (compact) */}
-        <div className="flex items-center justify-between bg-slate-800 rounded-xl p-2">
-          <Button
-            onClick={handleUndo}
-            disabled={undoStack.isEmpty()}
-            variant="ghost"
-            size="sm"
-            className="text-slate-300 hover:text-white disabled:opacity-50 h-8 px-3"
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            Undo
-          </Button>
-
-          <Button
-            onClick={handleReset}
-            variant="ghost"
-            size="sm"
-            className="text-slate-300 hover:text-white h-8 px-3"
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            Reset
-          </Button>
-        </div>
+        {/* Removed Undo/Reset row to save vertical space */}
 
         {/* Barbell Selection */}
         <div className="space-y-3">
@@ -132,7 +110,19 @@ export default function WeightCalculator() {
 
         {/* Plates */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-white">Plates</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-white">Plates</h3>
+            <Button
+              onClick={handleReset}
+              variant="ghost"
+              size="sm"
+              className="text-slate-300 hover:text-white h-8 px-3"
+              title="Reset all"
+            >
+              <RotateCcw className="w-4 h-4 mr-1" />
+              Reset
+            </Button>
+          </div>
           {(() => {
             // 3 rows: first 4, next 3, remaining (e.g., 2)
             const row1 = plateWeights.slice(0, 4)

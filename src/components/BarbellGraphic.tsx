@@ -132,7 +132,7 @@ export default function BarbellGraphic({ total, unit, order, showCollars = false
           </defs>
 
           {/* total label fixed just above the shaft, independent of plate height */}
-          <text x={cx} y={shaftY - shaftH / 2 - 14} fill="#ffffff" fontSize="32" fontWeight={800} textAnchor="middle">
+          <text x={cx} y={shaftY - shaftH / 2 - 14} fill="#ffffff" fontSize="40" fontWeight={800} textAnchor="middle" stroke="#000" strokeWidth={3} strokeOpacity={0.35} style={{ paintOrder: 'stroke fill' }}>
             {total} {unit}
           </text>
 
