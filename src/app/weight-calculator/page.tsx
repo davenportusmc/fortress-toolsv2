@@ -34,7 +34,6 @@ export default function WeightCalculator() {
   const handleReset = () => {
     saveState()
     setPlates({})
-    setBarbell(45)
     setOrder([])
   }
 
