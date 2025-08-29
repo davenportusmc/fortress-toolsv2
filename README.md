@@ -18,6 +18,35 @@ npm run dev
 ```
 If you previously ran `npm install` before I added new dependencies, run it again.
 
+## Ports: start and stop
+
+Use these commands to control which port the app runs on and how to stop it.
+
+### Dev server
+- Default port 3000:
+  ```bash
+  npm run dev
+  # open http://localhost:3000
+  ```
+- Specific port (example: 3002):
+  ```bash
+  npm run dev -- -p 3002
+  # open http://localhost:3002
+  ```
+- Windows PowerShell note (execution policy may block npm.ps1):
+  ```powershell
+  npm.cmd run dev -- -p 3002
+  ```
+- Stop the server: press Ctrl + C in the terminal running the dev server.
+
+### Production server
+- Build and start on a specific port (example: 4000):
+  ```bash
+  npm run build
+  npm start -- -p 4000
+  # open http://localhost:4000
+  ```
+
 ## Commands
 - `npm run dev` – start dev server (http://localhost:3000)
 - `npm run build` – production build

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Calculator, Dumbbell, ArrowLeftRight, Quote } from 'lucide-react'
+import { Calculator, Dumbbell, ArrowLeftRight, Quote, Timer } from 'lucide-react'
 
 export default function HomePage() {
   const [quotes, setQuotes] = useState<string[]>([])
@@ -79,6 +79,15 @@ export default function HomePage() {
               Conversion Calculator
             </Button>
           </Link>
+
+          <Link href="/timer" className="block">
+            <Button className="w-full fortress-button h-16 text-lg">
+              <Timer className="w-6 h-6 mr-3" />
+              WOD Timer Hub
+            </Button>
+          </Link>
+
+          {/* EMOM standalone page removed */}
 
           <Button onClick={openMotivate} className="w-full fortress-button h-16 text-lg">
             <Quote className="w-6 h-6 mr-3" />
