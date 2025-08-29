@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Calculator, Dumbbell, ArrowLeftRight, Quote } from 'lucide-react'
 
@@ -11,6 +11,7 @@ export default function HomePage() {
   const [showQuote, setShowQuote] = useState(false)
   const [currentQuote, setCurrentQuote] = useState<string>('')
   const [party, setParty] = useState(false)
+  const [showBackToLift, setShowBackToLift] = useState(false)
   const partyCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const partyRAF = useRef<number | null>(null)
   const stopPartyTimeout = useRef<number | null>(null)
@@ -51,15 +52,16 @@ export default function HomePage() {
   const startParty = () => {
     if (party) return
     setParty(true)
-    // Auto-stop after 10s
+    // Auto-stop after 5s
     if (stopPartyTimeout.current) window.clearTimeout(stopPartyTimeout.current)
     stopPartyTimeout.current = window.setTimeout(() => {
       setParty(false)
+      setShowBackToLift(true)
       if (stopPartyTimeout.current) {
         window.clearTimeout(stopPartyTimeout.current)
         stopPartyTimeout.current = null
       }
-    }, 10000)
+    }, 5000)
   }
 
   // Confetti + Fireworks animation on a fixed canvas overlay
@@ -85,8 +87,8 @@ export default function HomePage() {
 
     const spawnConfettiBurst = () => {
       const cx = rand(0, canvas.width)
-      // Confetti near center band for mobile visibility
-      const cy = rand(canvas.height * 0.35, canvas.height * 0.65)
+      // Shift upward to cover top ~20% as well
+      const cy = rand(canvas.height * 0.10, canvas.height * 0.55)
       for (let i = 0; i < 40; i++) {
         particles.push({
           x: cx,
@@ -106,7 +108,7 @@ export default function HomePage() {
 
     const spawnFirework = () => {
       const cx = rand(canvas.width * 0.15, canvas.width * 0.85)
-      const cy = rand(canvas.height * 0.35, canvas.height * 0.65)
+      const cy = rand(canvas.height * 0.10, canvas.height * 0.55)
       const count = 80
       for (let i = 0; i < count; i++) {
         const angle = (i / count) * Math.PI * 2
@@ -128,7 +130,7 @@ export default function HomePage() {
     const spawnItems = () => {
       // Randomly choose side and sprite
       const fromLeft = Math.random() < 0.5
-      const y = rand(canvas.height * 0.4, canvas.height * 0.6)
+      const y = rand(canvas.height * 0.15, canvas.height * 0.50)
       const x = fromLeft ? -60 : canvas.width + 60
       const speed = rand(2, 4) * (fromLeft ? 1 : -1)
       const sprite: P['sprite'] = Math.random() < 0.5 ? 'barbell' : (Math.random() < 0.5 ? 'kettlebell' : 'plate')
@@ -310,16 +312,16 @@ export default function HomePage() {
         <div className="space-y-4">
           <Link href="/percent-calculator" className="block">
             <Button
-              className={`w-full fortress-button h-16 text-lg ${party ? 'party-shake party-color' : ''}`}
+              className={`w-full fortress-button h-16 text-lg ${party ? 'party-color-1' : ''}`}
             >
               <Calculator className="w-6 h-6 mr-3" />
               Percent Calculator
             </Button>
           </Link>
-          
+
           <Link href="/weight-calculator" className="block">
             <Button
-              className={`w-full fortress-button h-16 text-lg ${party ? 'party-run party-color' : ''}`}
+              className={`w-full fortress-button h-16 text-lg ${party ? 'party-color-2' : ''}`}
             >
               <Dumbbell className="w-6 h-6 mr-3" />
               Barbell Calculator
@@ -328,31 +330,30 @@ export default function HomePage() {
 
           <Link href="/conversion-calculator" className="block">
             <Button
-              className={`w-full fortress-button h-16 text-lg ${party ? 'party-spin party-color' : ''}`}
+              className={`w-full fortress-button h-16 text-lg ${party ? 'party-color-3' : ''}`}
             >
               <ArrowLeftRight className="w-6 h-6 mr-3" />
               Conversion Calculator
             </Button>
           </Link>
 
-          {/* WOD Timer Hub temporarily hidden */}
+          {/* Bottom actions row */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              onClick={openMotivate}
+              className={`w-full fortress-button h-12 text-base ${party ? 'party-color-4' : ''}`}
+            >
+              <Quote className="w-5 h-5 mr-2" />
+              Chalk Talk
+            </Button>
 
-          {/* EMOM standalone page removed */}
-
-          <Button
-            onClick={openMotivate}
-            className={`w-full fortress-button h-16 text-lg ${party ? 'party-tilt party-color' : ''}`}
-          >
-            <Quote className="w-6 h-6 mr-3" />
-            Chalk Talk
-          </Button>
-
-          <Button
-            onClick={startParty}
-            className={`w-full fortress-button h-16 text-lg ${party ? 'party-pulse party-color' : ''}`}
-          >
-            🎉 Party Time!
-          </Button>
+            <Button
+              onClick={startParty}
+              className={`w-full fortress-button h-12 text-base ${party ? 'party-color-5' : ''}`}
+            >
+              🎉 Party Time!
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -374,11 +375,25 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* Back to lifting modal */}
+      {showBackToLift && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowBackToLift(false)} />
+          <div className="relative z-10 mx-auto max-w-sm p-5 mt-24 md:mt-40">
+            <div className="rounded-xl border border-slate-700 bg-slate-800/95 backdrop-blur p-6 shadow-2xl text-center">
+              <div className="text-slate-100 text-xl font-semibold mb-4">Haha, why did you click this button? Did you think it was going to help you at CrossFit? Goodness, you’re easily distracted. Now get back to lifting!</div>
+              <Button onClick={() => setShowBackToLift(false)} className="px-5 h-10 fortress-button">Got it</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Party overlay canvas */}
       <canvas
         ref={partyCanvasRef}
         className={`fixed inset-0 ${party ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 pointer-events-none z-30`}
       />
+
       <style jsx global>{`
         @keyframes btn-shake-kf {
           0%,100%{ transform: translateX(0) }
@@ -435,6 +450,27 @@ export default function HomePage() {
         }
         .party-color {
           animation: party-hue-kf 1.5s linear infinite, party-flash-kf 0.9s ease-in-out infinite alternate;
+        }
+        /* Staggered color cycles per button */
+        .party-color-1 {
+          animation: party-hue-kf 1.6s linear infinite, party-flash-kf 0.9s ease-in-out infinite alternate;
+          animation-delay: 0s, 0s;
+        }
+        .party-color-2 {
+          animation: party-hue-kf 1.6s linear infinite, party-flash-kf 0.9s ease-in-out infinite alternate;
+          animation-delay: 0.2s, 0.1s;
+        }
+        .party-color-3 {
+          animation: party-hue-kf 1.6s linear infinite, party-flash-kf 0.9s ease-in-out infinite alternate;
+          animation-delay: 0.4s, 0.2s;
+        }
+        .party-color-4 {
+          animation: party-hue-kf 1.6s linear infinite, party-flash-kf 0.9s ease-in-out infinite alternate;
+          animation-delay: 0.6s, 0.3s;
+        }
+        .party-color-5 {
+          animation: party-hue-kf 1.6s linear infinite, party-flash-kf 0.9s ease-in-out infinite alternate;
+          animation-delay: 0.8s, 0.4s;
         }
       `}</style>
     </div>
