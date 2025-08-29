@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { createClock } from "@/lib/clock";
-import { initSounds, playBeep, playLongBeep, primeSounds } from "@/utils/sounds";
+import { initSounds, playBeep, playLongBeep, primeSounds, scheduleBeepAt, scheduleLongBeepAt } from "@/utils/sounds";
 
 function formatMMSS(ms: number) {
   const totalSec = Math.floor(ms / 1000);
@@ -20,6 +20,23 @@ export default function TimerPage() {
   // Small advance to compensate for audio output latency and scheduling jitter
   const AUDIO_EARLY_MS = 60;
   const clockRef = useRef<ReturnType<typeof createClock> | null>(null);
+  // Screen wake lock for mobile to prevent sleep during workouts
+  const wakeLockRef = useRef<any | null>(null);
+  // Pre-start countdown value (10..1), 0 means no overlay
+  const [prestart, setPrestart] = useState(0);
+  // Whether the fullscreen timer UI is active (during prestart and while running/paused until Exit)
+  const [fullscreenActive, setFullscreenActive] = useState(false);
+  // Local confirm dialog for Exit (avoids browser confirm issues in fullscreen)
+  const [confirmExit, setConfirmExit] = useState(false);
+  // Finished state to alter UI when a timer completes
+  const [finished, setFinished] = useState(false);
+  // Refs for precise final 3-2-1 scheduling (using Web Audio scheduler)
+  const endCueTimeoutsRef = useRef<number[]>([]);
+  const endBeepScheduledRef = useRef(false);
+  const usingEndSchedulerRef = useRef(false);
+  // Post-zero hold to delay finished UI reveal (keep 0:00 visible for 1s)
+  const [postZeroHold, setPostZeroHold] = useState(false);
+  const finishedTimeoutRef = useRef<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [running, setRunning] = useState(false);
   const [tab, setTab] = useState<"for-time" | "amrap" | "emom" | "tabata">(
@@ -45,16 +62,42 @@ export default function TimerPage() {
     return () => unsub();
   }, []);
 
-  // Pre-start countdown value (10..1), 0 means no overlay
-  const [prestart, setPrestart] = useState(0);
-  // Whether the fullscreen timer UI is active (during prestart and while running/paused until Exit)
-  const [fullscreenActive, setFullscreenActive] = useState(false);
-  // Local confirm dialog for Exit (avoids browser confirm issues in fullscreen)
-  const [confirmExit, setConfirmExit] = useState(false);
-  // Finished state to alter UI when a timer completes
-  const [finished, setFinished] = useState(false);
-  // Refs for precise final 3-2-1 scheduling
-  const endCueTimeoutsRef = useRef<number[]>([]);
+  // Acquire a screen wake lock on mobile while countdown/running/fullscreen is active
+  useEffect(() => {
+    const wantsWake = fullscreenActive || prestart > 0 || running;
+    let canceled = false;
+    async function acquire() {
+      try {
+        if (!wantsWake) return;
+        const wl = await (navigator as any).wakeLock?.request?.('screen');
+        if (canceled) {
+          try { wl?.release?.(); } catch {}
+          return;
+        }
+        wakeLockRef.current = wl;
+        wl?.addEventListener?.('release', () => {
+          // could attempt re-acquire on next visibilitychange
+        });
+      } catch {}
+    }
+    if (wantsWake) acquire();
+
+    const onVis = () => {
+      // Some browsers drop wake lock on tab hide; re-acquire when visible
+      if (document.visibilityState === 'visible' && (fullscreenActive || prestart > 0 || running)) {
+        acquire();
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+
+    return () => {
+      canceled = true;
+      document.removeEventListener('visibilitychange', onVis);
+      try { wakeLockRef.current?.release?.(); } catch {}
+      wakeLockRef.current = null;
+    };
+  }, [fullscreenActive, prestart, running]);
+
 
   // Keep a ref of running to allow aborting pre-start if user pauses
   const runningRef = useRef(running);
@@ -78,9 +121,9 @@ export default function TimerPage() {
       }
     } catch {}
     setFullscreenActive(true);
-    // 10-second prestart: precise scheduling for even 3-2-1 and long beep at 0
+    // 10-second prestart: precise scheduling for even 3-2-1 (no long beep at GO)
     const startAt = Date.now() + 10000;
-    // Schedule short beeps at 3,2,1 seconds remaining (play slightly early to compensate latency)
+    // Schedule short beeps at 3,2,1 seconds remaining using cancellable timeouts
     [3000, 2000, 1000].forEach((mark) => {
       const delay = Math.max(0, startAt - Date.now() - mark - AUDIO_EARLY_MS);
       window.setTimeout(() => {
@@ -195,9 +238,13 @@ export default function TimerPage() {
     // Keep fullscreen active unless user chooses Exit
     setPrestart(0);
     setFinished(false);
+    setPostZeroHold(false);
+    if (finishedTimeoutRef.current) { clearTimeout(finishedTimeoutRef.current); finishedTimeoutRef.current = null; }
     // Clear any pending end-cue timeouts
     endCueTimeoutsRef.current.forEach((id) => clearTimeout(id));
     endCueTimeoutsRef.current = [];
+    endBeepScheduledRef.current = false;
+    usingEndSchedulerRef.current = false;
   };
 
   // Cancel/Exit actions for prestart and running fullscreen
@@ -209,6 +256,8 @@ export default function TimerPage() {
     setFullscreenActive(false);
     exitFullscreenIfAny();
     setFinished(false);
+    setPostZeroHold(false);
+    if (finishedTimeoutRef.current) { clearTimeout(finishedTimeoutRef.current); finishedTimeoutRef.current = null; }
     endCueTimeoutsRef.current.forEach((id) => clearTimeout(id));
     endCueTimeoutsRef.current = [];
   };
@@ -226,6 +275,8 @@ export default function TimerPage() {
     setFinished(false);
     exitFullscreenIfAny();
     setConfirmExit(false);
+    setPostZeroHold(false);
+    if (finishedTimeoutRef.current) { clearTimeout(finishedTimeoutRef.current); finishedTimeoutRef.current = null; }
     endCueTimeoutsRef.current.forEach((id) => clearTimeout(id));
     endCueTimeoutsRef.current = [];
   };
@@ -277,40 +328,27 @@ export default function TimerPage() {
     tabataPhaseRemainingMs: 0,
   });
 
-  // Precise scheduled 3-2-1 end beeps for AMRAP/Tabata only
+  // Precise scheduled 3-2-1 end beeps for AMRAP/Tabata using Web Audio (and long beep at 0)
   useEffect(() => {
-    if (!running) {
-      endCueTimeoutsRef.current.forEach((id) => clearTimeout(id));
-      endCueTimeoutsRef.current = [];
-      return;
-    }
+    if (!running) { endCueTimeoutsRef.current.forEach((id) => clearTimeout(id)); endCueTimeoutsRef.current = []; return; }
     let remaining = 0;
     if (tab === 'amrap') remaining = amrapRemainingMs;
     else if (tab === 'tabata') remaining = tabataRemainingMs;
     else remaining = 0; // EMOM/For-time: do not schedule 3-2-1 here
 
-    if (remaining <= 0) {
-      endCueTimeoutsRef.current.forEach((id) => clearTimeout(id));
-      endCueTimeoutsRef.current = [];
-      return;
-    }
-    if (remaining <= 4000) {
-      if (endCueTimeoutsRef.current.length === 0) {
-        const newIds: number[] = [];
-        const now = Date.now();
-        const targetAt = now + remaining;
-        for (const m of [3000, 2000, 1000]) {
-          if (remaining >= m) {
-            const delay = Math.max(0, targetAt - now - m - AUDIO_EARLY_MS);
-            const id = window.setTimeout(() => { playBeep(); }, delay);
-            newIds.push(id);
-          }
-        }
-        endCueTimeoutsRef.current = newIds;
-      }
-    } else {
-      endCueTimeoutsRef.current.forEach((id) => clearTimeout(id));
-      endCueTimeoutsRef.current = [];
+    if (remaining <= 0) { endCueTimeoutsRef.current.forEach((id) => clearTimeout(id)); endCueTimeoutsRef.current = []; return; }
+    if (remaining <= 5000 && !endBeepScheduledRef.current) {
+      const now = Date.now();
+      const targetAt = now + remaining;
+      [3000, 2000, 1000].forEach((m) => {
+        if (remaining >= m) scheduleBeepAt(targetAt - m);
+      });
+      scheduleLongBeepAt(targetAt);
+      endBeepScheduledRef.current = true;
+      usingEndSchedulerRef.current = true;
+    } else if (remaining > 5000) {
+      endBeepScheduledRef.current = false; // allow re-arm when getting closer again
+      usingEndSchedulerRef.current = false;
     }
   }, [running, tab, amrapRemainingMs, tabataRemainingMs]);
 
@@ -324,11 +362,12 @@ export default function TimerPage() {
         amrapRemainingMs > 0 &&
         curCeil !== prevCeil &&
         (curCeil === 3 || curCeil === 2 || curCeil === 1) &&
-        endCueTimeoutsRef.current.length === 0
+        endCueTimeoutsRef.current.length === 0 &&
+        !usingEndSchedulerRef.current
       ) {
         playBeep();
       }
-      if (amrapRemainingMs <= AUDIO_EARLY_MS && prev.amrapRemainingMs > AUDIO_EARLY_MS) {
+      if (!endBeepScheduledRef.current && !usingEndSchedulerRef.current && amrapRemainingMs <= AUDIO_EARLY_MS && prev.amrapRemainingMs > AUDIO_EARLY_MS) {
         playLongBeep();
         // ensure any pending scheduled beeps are cleared
         endCueTimeoutsRef.current.forEach((id) => clearTimeout(id));
@@ -370,7 +409,8 @@ export default function TimerPage() {
           tabataPhaseRemaining > 0 &&
           curRestCeil !== prevRestCeil &&
           (curRestCeil === 3 || curRestCeil === 2 || curRestCeil === 1) &&
-          endCueTimeoutsRef.current.length === 0
+          endCueTimeoutsRef.current.length === 0 &&
+          !(usingEndSchedulerRef.current && tabataRemainingMs <= 5000)
         ) {
           playBeep();
         }
@@ -384,14 +424,15 @@ export default function TimerPage() {
           tabataPhaseRemaining > 0 &&
           curWorkCeil !== prevWorkCeil &&
           (curWorkCeil === 3 || curWorkCeil === 2 || curWorkCeil === 1) &&
-          endCueTimeoutsRef.current.length === 0
+          endCueTimeoutsRef.current.length === 0 &&
+          !(usingEndSchedulerRef.current && tabataRemainingMs <= 5000)
         ) {
           playBeep();
         }
       }
 
       // Finish long beep at final completion
-      if (tabataTotalMs > 0 && tabataRemainingMs <= AUDIO_EARLY_MS && prev.tabataRemainingMs > AUDIO_EARLY_MS) {
+      if (!endBeepScheduledRef.current && !usingEndSchedulerRef.current && tabataTotalMs > 0 && tabataRemainingMs <= AUDIO_EARLY_MS && prev.tabataRemainingMs > AUDIO_EARLY_MS) {
         playLongBeep();
         endCueTimeoutsRef.current.forEach((id) => clearTimeout(id));
         endCueTimeoutsRef.current = [];
@@ -410,27 +451,21 @@ export default function TimerPage() {
   }, [tab, running, amrapRemainingMs, amrapTargetMs, emomInWorkPhase, emomRemainingMs, emomTotalMs, emomWorkMs, emomPhaseRemaining, tabataInWork, tabataRemainingMs, tabataTotalMs, tabataCycleMs, tabataPhaseRemaining]);
 
   useEffect(() => {
-    // Auto-pause when AMRAP reaches 0
-    if (tab === 'amrap' && running && amrapTargetMs > 0 && amrapRemainingMs === 0) {
+    // Auto-pause when reaching 0, then hold 1s before revealing finished UI
+    const hitAmrap = tab === 'amrap' && running && amrapTargetMs > 0 && amrapRemainingMs === 0;
+    const hitEmom = tab === 'emom' && running && emomTotalMs > 0 && emomRemainingMs === 0;
+    const hitTabata = tab === 'tabata' && running && tabataTotalMs > 0 && tabataRemainingMs === 0;
+    if (hitAmrap || hitEmom || hitTabata) {
       clockRef.current?.pause();
       setRunning(false);
-      setFinished(true);
-      // Fire confetti on finish
-      fireConfetti();
-    }
-    // Auto-pause when EMOM completes all rounds
-    if (tab === 'emom' && running && emomTotalMs > 0 && emomRemainingMs === 0) {
-      clockRef.current?.pause();
-      setRunning(false);
-      setFinished(true);
-      fireConfetti();
-    }
-    // Auto-pause when Tabata completes all rounds
-    if (tab === 'tabata' && running && tabataTotalMs > 0 && tabataRemainingMs === 0) {
-      clockRef.current?.pause();
-      setRunning(false);
-      setFinished(true);
-      fireConfetti();
+      setPostZeroHold(true);
+      if (finishedTimeoutRef.current) { clearTimeout(finishedTimeoutRef.current); }
+      finishedTimeoutRef.current = window.setTimeout(() => {
+        setPostZeroHold(false);
+        setFinished(true);
+        fireConfetti();
+        finishedTimeoutRef.current = null;
+      }, 1000);
     }
   }, [tab, running, amrapRemainingMs, amrapTargetMs, emomRemainingMs, emomTotalMs, tabataRemainingMs, tabataTotalMs]);
 
@@ -703,6 +738,12 @@ export default function TimerPage() {
           role="dialog"
           aria-label="Starting countdown"
           className="fixed inset-0 z-[100] fortress-gradient flex items-center justify-center"
+          style={{
+            paddingTop: 'env(safe-area-inset-top)',
+            paddingLeft: 'env(safe-area-inset-left)',
+            paddingRight: 'env(safe-area-inset-right)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)'
+          }}
         >
           <div className="text-center space-y-6">
             <div>
@@ -712,8 +753,8 @@ export default function TimerPage() {
               </div>
             </div>
             <div className="flex items-center justify-center gap-3">
-              <Button onClick={onCancelPrestart} className="h-12 px-6 bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600">Cancel</Button>
-              <Button onClick={onExit} className="h-12 px-6 fortress-button">Exit</Button>
+              <Button onClick={onCancelPrestart} className="h-16 sm:h-12 px-6 bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600">Cancel</Button>
+              <Button onClick={onExit} className="h-16 sm:h-12 px-6 fortress-button">Exit</Button>
             </div>
           </div>
         </div>
@@ -725,6 +766,12 @@ export default function TimerPage() {
           role="dialog"
           aria-label={finished ? "Timer finished" : "Timer running"}
           className="fixed inset-0 z-[100] fortress-gradient"
+          style={{
+            paddingTop: 'env(safe-area-inset-top)',
+            paddingLeft: 'env(safe-area-inset-left)',
+            paddingRight: 'env(safe-area-inset-right)',
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)'
+          }}
         >
           <div className="w-full h-full grid grid-rows-[1fr_auto_1fr]">
             <div />
@@ -739,17 +786,19 @@ export default function TimerPage() {
                   <div className="text-white font-extrabold text-[6vw] leading-tight select-none mt-1">Well done!</div>
                   <div className="text-slate-200 text-lg">Great work. Take a breath.</div>
                   <div className="flex items-center justify-center gap-4 mt-2">
-                    <Button onClick={onConfirmExit} className="h-14 px-8 fortress-button">Finished!</Button>
+                    <Button onClick={onConfirmExit} className="h-16 sm:h-14 px-8 fortress-button">Finished!</Button>
                   </div>
                 </>
+              ) : postZeroHold ? (
+                <div className="h-[56px]" />
               ) : (
                 <div className="flex items-center justify-center gap-4">
                   {running ? (
-                    <Button onClick={onPause} className="h-14 px-8 fortress-button">Pause</Button>
+                    <Button onClick={onPause} className="h-16 sm:h-14 px-8 fortress-button">Pause</Button>
                   ) : (
-                    <Button onClick={onResume} className="h-14 px-8 fortress-button">Resume</Button>
+                    <Button onClick={onResume} className="h-16 sm:h-14 px-8 fortress-button">Resume</Button>
                   )}
-                  <Button onClick={onExit} className="h-14 px-8 bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600">Exit</Button>
+                  <Button onClick={onExit} className="h-16 sm:h-14 px-8 bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600">Exit</Button>
                 </div>
               )}
             </div>

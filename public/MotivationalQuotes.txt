@@ -1,18 +1,11 @@
-“A champion is someone who gets up when they can’t.” — Jack Dempsey
-“A journey of a thousand miles begins with a single step.” — Lao Tzu
-“A person who never made a mistake never tried anything new.” — Albert Einstein
 “A river cuts through rock not because of its power but because of its persistence.” — Jim Watkins
 “A smooth sea never made a skilled sailor.” — Franklin D. Roosevelt
 “A workout shared is a workout multiplied.” — Unknown
 “A year from now you may wish you had started today.” — Karen Lamb
-“Action is the foundational key to all success.” — Pablo Picasso
-“Attitude is a little thing that makes a big difference.” — Winston Churchill
 “Be not afraid of growing slowly, be afraid only of standing still.” — Chinese Proverb
 “Be stronger than your strongest excuse.” — Unknown
 “Believe you can and you’re halfway there.” — Theodore Roosevelt
 “Camaraderie is the weight you can’t lift alone.” — Unknown
-“Champions keep playing until they get it right.” — Billie Jean King
-“Change your thoughts and you change your world.” — Norman Vincent Peale
 “Character is who you are when no one is watching.” — Unknown
 “Community: where your best effort inspires the best in others.” — Unknown
 “Consistency is the key to success.” — Unknown
@@ -30,24 +23,13 @@
 “Don’t lower your goals to the level of your abilities. Raise your abilities to the height of your goals.” — Unknown
 “Don’t stop when you’re tired. Stop when you’re done.” — Unknown
 “Don’t watch the clock; do what it does. Keep going.” — Sam Levenson
-“Don’t wish it were easier, wish you were better.” — Jim Rohn
-“Dream big. Start small. Act now.” — Robin Sharma
 “Energy and persistence conquer all things.” — Benjamin Franklin
 “Every rep is yours, but the fight is ours.” — Unknown
 “Excellence is not being the best; it is doing your best.” — Unknown
-“Fall seven times and stand up eight.” — Japanese Proverb
 “Friends who sweat together, stay together.” — Unknown
-“Genius is 1% inspiration and 99% perspiration.” — Thomas Edison
-“Great works are performed not by strength but by perseverance.” — Samuel Johnson
-“Hard work beats talent when talent doesn’t work hard.” — Tim Notke
 “I find that the harder I work, the more luck I seem to have.” — Thomas Jefferson
-“If you aim at nothing, you’ll hit it every time.” — Zig Ziglar
-“If you’re going through hell, keep going.” — Winston Churchill
-“In the middle of every difficulty lies opportunity.” — Albert Einstein
 “Iron sharpens iron.” — Proverb
 “It always seems impossible until it’s done.” — Nelson Mandela
-“Little by little, one travels far.” — J.R.R. Tolkien
-“Most people fail, not because of lack of desire, but because of lack of commitment.” — Vince Lombardi
 “Motivation gets you started. Community keeps you going.” — Unknown
 “Motivation gets you started. Habit keeps you going.” — Jim Ryun
 “No excuses. No explanations.” — Tony Dungy
@@ -60,16 +42,7 @@
 “Setting goals is the first step in turning the invisible into the visible.” — Tony Robbins
 “Small daily improvements over time lead to stunning results.” — Robin Sharma
 “Start where you are. Use what you have. Do what you can.” — Arthur Ashe
-“Strength does not come from winning. Your struggles develop your strengths.” — Arnold Schwarzenegger
-“Strength doesn’t come from what you can do. It comes from overcoming the things you once thought you couldn’t.” — Rikki Rogers
-“Stronger together — in every sense.” — Unknown
-“Success is focusing the full power of all you are on what you have a burning desire to achieve.” — Wilferd Peterson
-“Success is not final, failure is not fatal: It is the courage to continue that counts.” — Winston Churchill
 “Success is nothing more than a few simple disciplines practiced every day.” — Jim Rohn
-“Success is the result of preparation, hard work, and learning from failure.” — Colin Powell
-“Success is the sum of small efforts repeated day in and day out.” — Robert Collier
-“Success is walking from failure to failure with no loss of enthusiasm.” — Winston Churchill
-“Success usually comes to those who are too busy to be looking for it.” — Henry David Thoreau
 “Suffer the pain of discipline, or suffer the pain of regret.” — Unknown
 “Suffer together, celebrate together.” — Unknown
 “Surround yourself with people who push you to do and be better.” — Unknown
@@ -95,12 +68,77 @@
 “We are what we repeatedly do. Excellence, then, is not an act, but a habit.” — Aristotle
 “We don’t just build muscle; we build each other.” — Unknown
 “We must all suffer one of two things: the pain of discipline or the pain of regret.” — Jim Rohn
-“We rise by lifting others.” — Robert Ingersoll
 “What seems impossible today will one day become your warm-up.” — Unknown
-“What you do today can improve all your tomorrows.” — Ralph Marston
-“What you get by achieving your goals is not as important as what you become by achieving your goals.” — Zig Ziglar
 “What you lack in talent can be made up with desire, hustle, and giving 110% all the time.” — Don Zimmer
 “When you feel like quitting, remember the person next to you is still going.” — Unknown
 “You don’t have to be extreme, just consistent — and supported.” — Unknown
 “Your body can stand almost anything. It’s your mind you have to convince.” — Anonymous
 “Your only limit is your mind.” — Unknown
+“PRs are just yesterday’s excuses getting evicted.”
+“RX is a mindset. Scaled is a strategy.”
+“Dear burpees: it’s not me, it’s you.”
+“Redline responsibly.”
+“Thrusters: because squats weren’t hard enough already.”
+“Chalk: adult fairy dust.”
+“My warm-up has a warm-up.”
+“Unbroken… in spirit, at least.”
+“Hook grip: like a love letter to your thumbs.”
+“Fran lung is real. Tell my family I love them.”
+“Wall balls: fetch for grown-ups.”
+“If the bar’s not bending, you’re just pretending.”
+“EMOM: Every Minute, Oh My.”
+“Snatch first, ask questions later.”
+“Engine day: cardio but make it fashion.”
+“Double-unders: now with 100% more lash marks.”
+“Bench press: leg day for your ego.”
+“Mobility: because ‘T-rex can’t overhead squat’ is not a diagnosis.”
+“SkiErg—because rowing wasn’t icy enough.”
+“Echo Bike: where happiness goes to cool down.”
+“AMRAP: As Many Regrets As Possible.”
+“I lift for the plot twist.”
+“Core today, sore tomorrow.”
+“Kipping: it’s not cheating, it’s choreography.”
+“No-rep? More like ‘not yet.’”
+“Time cap: the friend who says ‘we’re leaving.’”
+“Glutes so sore they file a complaint.”
+“Rest day? I prefer active denial.”
+“Row. Regret. Repeat.”
+“Clean & jerk: tidy up, then throw it overhead.”
+“Chipper: because one workout wasn’t enough workouts.”
+“PVC pipe—where dreams learn to squat.”
+“RX is cool. Consistency is cooler.”
+“Go heavy or go home… and stretch.”
+“Today’s forecast: 100% chance of chalk storm.”
+“Gym math: add plates until it’s personal.”
+“Squat low, standards high.”
+“Got goats? Good—go pet them.”
+“Every rep is a love letter to Future You.”
+“Front rack: because wrists asked for adventure.”
+“Metcon hair, don’t care.”
+“Overhead squats: trust falls with a barbell.”
+“Deadlifts: because gravity needs boundaries.”
+“Tabata: four minutes that last forever.”
+“If you can talk, it’s the warm-up.”
+“Sled push—cardio for people who say they hate cardio.”
+“Chalky hands, clear mind, can’t lose.”
+“RX isn’t a personality; showing up is.”
+“Box jumps: it’s not the height, it’s the commitment.”
+“Grip it like rent’s due.”
+“Bar path straighter than my life.”
+“Gym friends spot the weight and the excuses.”
+“Burpee penalty: the most bipartisan policy in fitness.”
+“Lifting is therapy, plates are co-pays.”
+“Knees out, drama in.”
+"Burpees are just push-ups with commitment issues."
+"My thrusters are in a toxic relationship with my lungs."
+"Kipping: legally distinct from flailing."
+"The Echo Bike eats souls for carbs."
+“The whiteboard remembers everything.”
+"Wall balls: fetch for humans."
+“WODs don’t care about your feelings—only your form.”
+“Strength: the quiet flex.”
+“Sweat is pre-workout leaving the body.”
+“Today’s goal: fewer ‘no-reps,’ more ‘no problem.’”
+“Coach said ‘last set’—I speak fluent lies too.”
+"Scaling is strategy, not surrender."
+"Farmer’s carry: groceries but angry."
